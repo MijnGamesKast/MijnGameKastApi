@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.HttpResults;
-using MijnGameKast.API.Model;
+using MijnGameKast.API.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MijnGameKast.API.Controller;
+namespace MijnGameKast.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -28,7 +28,7 @@ public class UserController : ControllerBase
         User? user = _users.FirstOrDefault(u => u.Id == id);
         if (user == null)
         {
-            return NotFound("Shit is niet gevonden");
+            return NoContent();
         }
         
         return Ok(user);
@@ -51,10 +51,16 @@ public class UserController : ControllerBase
     [HttpDelete]
     public IActionResult Delete(int? id)
     {
-        // Console.WriteLine("Er is een item verwijderd");
-        // Remove user from the list with id number 3 for example
+        User? user = _users.FirstOrDefault(u => u.Id == id);
+
+        if (user == null)
+        {
+            return NoContent();
+        }
+
+        _users.Remove(user);
         
-        return Ok("User successfully deleted");
+        return Ok($"User with id {id} successfully deleted");
     }
 
     [HttpPut]

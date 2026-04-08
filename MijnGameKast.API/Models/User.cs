@@ -1,4 +1,6 @@
-namespace MijnGameKast.API.Model;
+using System.ComponentModel.DataAnnotations;
+
+namespace MijnGameKast.API.Models;
 
 public class User
 {
