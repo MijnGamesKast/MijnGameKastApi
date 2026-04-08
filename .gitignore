@@ -1,1 +1,79 @@
-/.idea
+# Build results
+bin/
+obj/
+out/
+Debug/
+Release/
+x64/
+x86/
+[Aa]rtifacts/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.user
+*.dbmdl
+*.pdb
+
+# JetBrains Rider / ReSharper
+.idea/
+.shelf/
+*.sln.iml
+_ReSharper*/
+*.ReSharper
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Logs
+logs/
+*.log
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+packages/
+.nuget/
+*.nupkg
+*.snupkg
+
+# Publishing
+app.publish/
+*.pubxml.user
+Properties/PublishProfiles/*.user
+
+# Code analysis / scanners
+.sonar/
+.sonarqube/
+.scannerwork/
+
+# ASP.NET Core / LibMan
+wwwroot/lib/
+
+# Local environment overrides (keep main appsettings in repo)
+appsettings.*.local.json
+secrets.json
+
+# Generated / tooling caches
+*.TransformLogs
+.stylecop/
+StyleCop.Cache
+*.cache
+
+# Editors
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Optional front-end artifacts (in case of client assets in the repo)
+node_modules/
+dist/
+bower_components/

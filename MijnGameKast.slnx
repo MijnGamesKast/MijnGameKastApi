@@ -1,1 +1,3 @@
-<Solution />
+<Solution>
+  <Project Path="MijnGameKast.API\MijnGameKast.API.csproj" Type="Classic C#" />
+</Solution>
