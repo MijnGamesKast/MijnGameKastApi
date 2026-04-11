@@ -1,4 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using MijnGamekast.API.Data.Interfaces;
+using MijnGamekast.API.Data.Repositories;
+using MijnGameKast.API.Services;
+using MijnGameKast.API.Services.interfaces;
 
 namespace MijnGameKast.API;
 
@@ -17,6 +21,9 @@ public class Program
         {
             options.SuppressModelStateInvalidFilter = true;
         });
+        
+        builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
+        builder.Services.AddScoped<ICatalogService, CatalogService>();
 
         var app = builder.Build();
 
