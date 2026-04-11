@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MijnGameKast.API.Models;
+namespace MijnGameKast.API.Data.Models;
 
 public class User
 {
