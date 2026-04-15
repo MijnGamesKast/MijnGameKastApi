@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.HttpResults;
-using MijnGameKast.API.Models;
+using MijnGameKast.API.Data.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MijnGameKast.API.Controllers;
