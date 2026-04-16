@@ -1,60 +1,65 @@
 using MijnGameKast.API.Data.Interfaces;
 using MijnGameKast.API.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MijnGameKast.API.Data.Repositories;
 
 public class CatalogRepository : ICatalogRepository
 {
-    private static List<Game> _games = new List<Game>()
+    private readonly AppDbContext _dbContext;
+
+    public CatalogRepository(AppDbContext dbContext)
     {
-        new Game() { Id = 1, Title = "Grand theft auto V", Description = ""},
-        new Game() { Id = 2, Title = "Bloodborne", Description = ""},
-        new Game() { Id = 3, Title = "Harry Potter 2", Description = ""},
-        new Game() { Id = 4, Title = "The Last of Us", Description = "The Last of Us is a third-person action-adventure game featuring a mix of exploration, stealth and combat. Players face both infected creatures and hostile human enemies while progressing through varied environments. The game includes a narrative-driven single-player campaign and a competitive online multiplayer mode called Factions. Trophy support is included, and additional downloadable content was made available separately."}
-    };
-
-    private static int _nextId = 5;
-
-
-    public Task<List<Game>> GetAllAsync()
+        _dbContext = dbContext;
+    }
+    
+    public async Task<List<Game>> GetAllAsync()
     {
-        return Task.FromResult(_games.ToList());
+        return await _dbContext.Games.ToListAsync();
     }
 
-    public Task<Game?> GetByIdAsync(int id)
+    public async Task<Game?> GetByIdAsync(int id)
     {
-        Game? game = _games.FirstOrDefault(g => g.Id == id);
-        return Task.FromResult(game);
+        return await _dbContext.Games.FindAsync(id);
+    }
+    
+    public async Task<Game> AddGameAsync(Game game)
+    {
+        _dbContext.Games.Add(game);
+        await _dbContext.SaveChangesAsync();
+
+        return game;
     }
 
-    public Task<Game> AddGameAsync(Game game)
+    public async Task<bool> UpdateGameAsync(Game game)
     {
-        game.Id = _nextId++;
-        _games.Add(game);
+        var existingGame = await _dbContext.Games.FindAsync(game.Id);
 
-        return Task.FromResult(game);
-    }
-
-    public Task<bool> UpdateGameAsync(Game game)
-    {
-        var existingGame = _games.FirstOrDefault(g => g.Id == game.Id);
         if (existingGame == null)
         {
-            return Task.FromResult(false);
+            return false;
         }
+
         existingGame.Title = game.Title;
         existingGame.Description = game.Description;
-        return Task.FromResult(true);
+        
+        await _dbContext.SaveChangesAsync();
+
+        return true;
     }
 
-    public Task<bool> DeleteGameAsync(int id)
+    public async Task<bool> DeleteGameAsync(int id)
     {
-        var game = _games.FirstOrDefault(g => g.Id == id);
+        var game = await _dbContext.Games.FindAsync(id);
+
         if (game == null)
         {
-            return Task.FromResult(false);
+            return false;
         }
-        _games.Remove(game);
-        return Task.FromResult(true);
+
+        _dbContext.Games.Remove(game);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
     }
 }
