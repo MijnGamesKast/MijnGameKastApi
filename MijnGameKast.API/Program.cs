@@ -39,6 +39,9 @@ public class Program
         
         builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
         builder.Services.AddScoped<ICatalogService, CatalogService>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
 
         var app = builder.Build();
 
