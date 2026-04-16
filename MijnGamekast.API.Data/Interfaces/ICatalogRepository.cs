@@ -1,6 +1,6 @@
 using MijnGameKast.API.Data.Models;
 
-namespace MijnGamekast.API.Data.Interfaces;
+namespace MijnGameKast.API.Data.Interfaces;
 
 public interface ICatalogRepository
 {

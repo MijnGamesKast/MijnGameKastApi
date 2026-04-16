@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using MijnGamekast.API.Data.Interfaces;
-using MijnGamekast.API.Data.Repositories;
+using MijnGameKast.API.Data.Interfaces;
+using MijnGameKast.API.Data.Repositories;
 using MijnGameKast.API.Services;
-using MijnGameKast.API.Services.interfaces;
+using MijnGameKast.API.Services.Interfaces;
+using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using MijnGameKast.API.Data;
+using MijnGameKast.API.Data.Seeders;
 
 namespace MijnGameKast.API;
 
