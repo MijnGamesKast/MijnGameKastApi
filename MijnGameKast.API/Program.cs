@@ -14,12 +14,23 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Env.Load();
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new Exception("CONNECTION_STRING is niet gevonden in het .env bestand!");
+        }
+        
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
         builder.Services.AddOpenApi();
+        
+        // Add the database context
+        builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
         
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -43,6 +54,13 @@ public class Program
 
         app.MapControllers();
 
+        // Database seeding
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            DbSeeder.SeedAsync(context).Wait();
+        }
+        
         app.Run();
     }
 }
