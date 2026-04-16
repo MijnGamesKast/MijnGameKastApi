@@ -1,6 +1,6 @@
 using MijnGameKast.API.Data.Models;
-using MijnGamekast.API.Data.Interfaces;
-using MijnGameKast.API.Services.interfaces;
+using MijnGameKast.API.Data.Interfaces;
+using MijnGameKast.API.Services.Interfaces;
 
 namespace MijnGameKast.API.Services;
 

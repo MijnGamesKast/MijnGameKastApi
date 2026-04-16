@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace MijnGameKast.API.Data.Models;
 
@@ -10,15 +9,15 @@ public class Game
     
     [Display(Name = "Titel")]
     [Required(ErrorMessage = "Vul de titel in.")]
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; set; }
     
     [Display(Name = "Beschrijving")]
     [Required(ErrorMessage = "Vul uw beschrijving in.")]
     public string Description { get; set; } = string.Empty;
     
-    [Display(Name = "Platform")]
-    public List<string>? Platforms { get; set; }
-    
-    [Display(Name = "Genre")]
-    public List<string>? Genres { get; set; }
+    // [Display(Name = "Platform")]
+    // public List<string>? Platforms { get; set; }
+    //
+    // [Display(Name = "Genre")]
+    // public List<string>? Genres { get; set; }
 }

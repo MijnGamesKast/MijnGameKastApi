@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MijnGameKast.API.Data.Models;
-using MijnGameKast.API.Services.interfaces;
+using MijnGameKast.API.Services.Interfaces;
 
 namespace MijnGameKast.API.Controllers;
 

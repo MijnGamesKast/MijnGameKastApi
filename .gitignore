@@ -77,3 +77,6 @@ Thumbs.db
 node_modules/
 dist/
 bower_components/
+
+
+/MijnGameKast.API/.env
