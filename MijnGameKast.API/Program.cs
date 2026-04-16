@@ -42,6 +42,8 @@ public class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<ISessionRepository, SessionRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<ICollectionRepository, CollectionRepository>();
+        builder.Services.AddScoped<ICollectionService, CollectionService>();
 
         var app = builder.Build();
 

@@ -77,7 +77,7 @@ public class CollectionService : ICollectionService
         
         var existingCollection = await _collectionRepository.GetByIdAsync(id);
 
-        if (existingCollection is null || existingCollection.UserId != session.UserId)
+        if (existingCollection == null || existingCollection.UserId != session.UserId)
         {
             return false;
         }
@@ -99,7 +99,7 @@ public class CollectionService : ICollectionService
 
         var existingCollection = await _collectionRepository.GetByIdAsync(id);
 
-        if (existingCollection is null)
+        if (existingCollection == null)
         {
             return false;
         }
