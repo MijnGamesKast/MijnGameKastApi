@@ -47,4 +47,17 @@ public class CollectionGameRepository : ICollectionGameRepository
 
         return true;
     }
+
+    public async Task<List<Game>> GetGamesByCollectionIdAsync(int collectionId)
+    {
+        return await _dbContext.CollectionGames
+            .Where(cg => cg.CollectionId == collectionId)
+            .Join(
+                _dbContext.Games,
+                cg => cg.GameId,
+                g => g.Id,
+                (cg, g) => g
+            )
+            .ToListAsync();
+    }
 }
