@@ -44,6 +44,8 @@ public class Program
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<ICollectionRepository, CollectionRepository>();
         builder.Services.AddScoped<ICollectionService, CollectionService>();
+        builder.Services.AddScoped<ICollectionGameRepository, CollectionGameRepository>();
+        builder.Services.AddScoped<ICollectionGameService, CollectionGameService>();
 
         var app = builder.Build();
 
