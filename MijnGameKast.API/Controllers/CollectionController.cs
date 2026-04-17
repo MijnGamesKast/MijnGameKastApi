@@ -9,10 +9,12 @@ namespace MijnGameKast.API.Controllers;
 public class CollectionController : ControllerBase
 {
     private readonly ICollectionService _collectionService;
+    private readonly ICollectionGameService _collectionGameService;
 
-    public CollectionController(ICollectionService collectionService)
+    public CollectionController(ICollectionService collectionService, ICollectionGameService collectionGameService)
     {
         _collectionService = collectionService;
+        _collectionGameService = collectionGameService;
     }
     
     [HttpGet]
@@ -167,22 +169,85 @@ public class CollectionController : ControllerBase
         });
     }
 
-    [HttpGet("{id}/games")]
-    public async Task<IActionResult> GetGamesInCollection(int id)
+    [HttpGet("{collectionId}/games")]
+    public async Task<IActionResult> GetGamesInCollection(int collectionId)
     {
-        return Ok("Games in collection");
+        var token = GetBearerToken();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return BadRequest(new
+            {
+                Message = "Er is geen token meegegeven."
+            });
+        }
+
+        var games = await _collectionGameService.GetGamesByCollectionIdAsync(collectionId, token);
+
+        if (games == null)
+        {
+            return NotFound(new
+            {
+                Message = $"Collectie met id {collectionId} is niet gevonden, is niet van jou, of je sessie is ongeldig/verlopen."
+            });
+        }
+
+        return Ok(games);
     }
 
-    [HttpPost("{id}/games/{gameId}")]
-    public async Task<IActionResult> AddGameToCollection(int id, int gameId)
+    [HttpPost("{collectionId}/games/{gameId}")]
+    public async Task<IActionResult> AddGameToCollection(int collectionId, int gameId)
     {
-        return Ok("Game added to collection");
+        var token = GetBearerToken();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return BadRequest(new
+            {
+                Message = "Er is geen token meegegeven."
+            });
+        }
+
+        var added = await _collectionGameService.AddGameToCollectionAsync(collectionId, gameId, token);
+
+        if (!added)
+        {
+            return BadRequest(new
+            {
+                Message = $"Game met id {gameId} kon niet aan collectie ({collectionId}) worden toegevoegd"
+            });
+        }
+
+        return Ok(new
+        {
+            Message = $"Game met id {gameId} is succesvol toegevoegd aan collectie ({collectionId})"
+        });
     }
 
-    [HttpDelete("{id}/games/{gameId}")]
-    public async Task<IActionResult> RemoveGameFromCollection(int id, int gameId)
+    [HttpDelete("{collectionId}/games/{gameId}")]
+    public async Task<IActionResult> RemoveGameFromCollection(int collectionId, int gameId)
     {
-        return Ok("Game removed from collection");
+        var token = GetBearerToken();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return BadRequest(new
+            {
+                Message = "Er is geen token meegegeven."
+            });
+        }
+
+        var removed = await _collectionGameService.RemoveGameFromCollectionAsync(collectionId, gameId, token);
+
+        if (!removed)
+        {
+            return NotFound(new
+            {
+                Message = $"Game me id {gameId} is niet gevonden in collectie ({collectionId})"
+            });
+        }
+
+        return Ok(new
+        {
+            Message = $"Game met Id {gameId} is succesvol verwijderd uit de collectie ({collectionId})"
+        });
     }
     
     private Dictionary<string, List<string>> GetValidationErrors()
