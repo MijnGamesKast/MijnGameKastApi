@@ -37,6 +37,11 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Logt een gebruiker in en geneert een token
+    /// </summary>
+    /// <param name="request">Login gegevens (email/username + wachtwoord)</param>
+    /// <returns>Token en gebruikersinformatie</returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {

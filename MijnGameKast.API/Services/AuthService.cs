@@ -76,6 +76,7 @@ public class AuthService : IAuthService
         }
         
         // Check if User exists
+        // Threat ID 15: Information leak using error messaging. Only show error message that login details are incorrect.
         if (user == null)
         {
             return new AuthResult
