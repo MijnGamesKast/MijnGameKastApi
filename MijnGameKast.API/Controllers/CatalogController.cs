@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
+using MijnGameKast.API.Attributes;
 using MijnGameKast.API.Data.Models;
 using MijnGameKast.API.Services.Interfaces;
+using MijnGameKast.API.Services.Results;
 
 namespace MijnGameKast.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CatalogController : ControllerBase
+public class CatalogController : CustomBaseController
 {
     private readonly ICatalogService _catalogService;
 
@@ -14,15 +16,31 @@ public class CatalogController : ControllerBase
     {
         _catalogService = catalogService;
     }
-
+    
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+        // Test the controller
+        Console.WriteLine("Get all games from catalog");
+        var token = GetToken();
+        Console.WriteLine($"Token: {token}");
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("Token is niet ingevuld!");
+        }
+        else
+        {
+            Console.WriteLine("Token is ingevuld!");
+        }
+        
+        
+        //
         var games = await _catalogService.GetAllAsync();
         return Ok(games);
     }
-
-    [HttpGet("{id}")]
+    
+    [HttpGet("{id}")] 
     public async Task<IActionResult> GetById(int id)
     {
         var game = await _catalogService.GetByIdAsync(id);
@@ -34,6 +52,7 @@ public class CatalogController : ControllerBase
         return Ok(game);
     }
 
+    [RequireAuth]
     [HttpPost]
     public async Task<IActionResult> AddGame([FromBody] Game game)
     {
@@ -61,6 +80,7 @@ public class CatalogController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = createdGame.Id }, createdGame);
     }
 
+    [RequireAuth(ModeratorOnly = true)]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateGame(int id, [FromBody] Game game)
     {
@@ -98,22 +118,12 @@ public class CatalogController : ControllerBase
         });
     }
 
+    [RequireAuth(ModeratorOnly = true)] 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(int id)
     {
-        var deletedGame = await _catalogService.DeleteGameAsync(id);
-
-        if (!deletedGame)
-        {
-            return NotFound(new
-            {
-                message = $"Game met {id} is niet gevonden!"
-            });
-        }
-
-        return Ok(new
-        {
-            message = $"Game met id {id} is succesvol verwijderd!"
-        });
+        int? userId = GetUserId();
+        var result = await _catalogService.DeleteGameAsync(id, userId);
+        return ToActionResult(result);
     }
 }

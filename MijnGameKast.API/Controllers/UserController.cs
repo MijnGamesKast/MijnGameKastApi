@@ -7,7 +7,7 @@ namespace MijnGameKast.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+public class UserController : CustomBaseController
 {
     // private static List<User> _users = new List<User>()
     // {

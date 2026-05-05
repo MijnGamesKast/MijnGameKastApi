@@ -103,7 +103,7 @@ public class AuthService : IAuthService
             UserId = user.Id,
             Token = Guid.NewGuid().ToString(),
             CreatedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddHours(2)
+            ExpiresAt = DateTime.UtcNow.AddHours(6)
         };
 
         await _sessionRepository.AddAsync(session);
@@ -120,43 +120,14 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<bool> LogoutAsync(string token)
+    public async Task<bool> LogoutAsync(Session session)
     {
-        // Check if session exists
-        var session = await _sessionRepository.GetByTokenAsync(token);
-        if (session == null)
-        {
-            return false;
-        }
-        
-        // Expire session
         session.ExpiresAt = DateTime.UtcNow;
         return await _sessionRepository.UpdateAsync(session);
     }
 
-    public async Task<AuthResult?> GetMeAsync(string token)
+    public async Task<AuthResult?> GetMeAsync(User user, Session session)
     {
-        // Check if a session exists
-        var session = await _sessionRepository.GetByTokenAsync(token);
-        // If a session does not exist, return null
-        if (session == null)
-        {
-            return null;
-        }
-
-        // If a session is expired, return null
-        if (session.ExpiresAt <= DateTime.UtcNow)
-        {
-            return null;
-        }
-        
-        var user = await _userRepository.GetByIdAsync(session.UserId);
-        // If a user does not exist, return null
-        if (user == null)
-        {
-            return null;
-        }
-
         return new AuthResult
         {
             Success = true,
@@ -165,7 +136,8 @@ public class AuthService : IAuthService
             ExpiresAt = session.ExpiresAt,
             UserId = user.Id,
             Username = user.Username,
-            Email = user.Email
+            Email = user.Email,
+            Role = user.Role
         };
     }
 }

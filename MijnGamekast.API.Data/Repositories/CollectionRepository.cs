@@ -13,7 +13,7 @@ public class CollectionRepository : ICollectionRepository
         _dbContext = dbContext;
     }
 
-    public async Task<List<Collection>> GetByUserIdAsync(int userId)
+    public async Task<List<Collection>> GetByUserIdAsync(int? userId)
     {
         return await _dbContext.Collections
             .Where(c => c.UserId == userId)

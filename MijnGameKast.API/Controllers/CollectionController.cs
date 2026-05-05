@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MijnGameKast.API.Attributes;
 using MijnGameKast.API.Data.Models;
 using MijnGameKast.API.Services.Interfaces;
 
@@ -6,7 +7,7 @@ namespace MijnGameKast.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CollectionController : ControllerBase
+public class CollectionController : CustomBaseController
 {
     private readonly ICollectionService _collectionService;
     private readonly ICollectionGameService _collectionGameService;
@@ -17,94 +18,63 @@ public class CollectionController : ControllerBase
         _collectionGameService = collectionGameService;
     }
     
+    [RequireAuth]
     [HttpGet]
     public async Task<IActionResult> GetCollection()
     {
-        var token = GetBearerToken();
+        var userId = GetUserId();
 
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven"
-            });
-        }
-
-        var collections = await _collectionService.GetMyCollectionsAsync(token);
-
-        if (collections == null)
-        {
-            return Unauthorized(new
-            {
-                Message = "Geen geldige sessie gevonden!"
-            });
-        }
+        var collections = await _collectionService.GetMyCollectionsAsync(userId);
         
         return Ok(collections);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetSpecificCollection(int id)
+    [RequireAuth]
+    [HttpGet("{collectionId}")]
+    public async Task<IActionResult> GetSpecificCollection(int collectionId)
     {
-        var token = GetBearerToken();
+        var userId = GetUserId();
 
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven"
-            });
-        }
-
-        var collection = await _collectionService.GetByIdAsync(id, token);
+        var collection = await _collectionService.GetByIdAsync(collectionId, userId);
         if (collection == null)
         {
             return NotFound(new
             {
-                Message = $"Collectie met id {id} is niet gevonden of je hebt geen toegang tot deze collectie"
+                Message = $"Collectie met id {collectionId} is niet gevonden of je hebt geen toegang tot deze collectie"
             });
         }
         
         return Ok(collection);
     }
 
+    [RequireAuth]
     [HttpPost]
     public async Task<IActionResult> CreateCollection([FromBody] Collection collection)
     {
+        Console.WriteLine("Create Collection Test 1");
         if (!ModelState.IsValid)
         {
+            Console.WriteLine("Create Collection Test 2");
             return BadRequest(new
             {
                 Message = "De ingevoerde gegevens zijn ongeldig.",
                 Errors = GetValidationErrors()
             });
         }
+        Console.WriteLine("Create Collection Test 3");
         
-        var token = GetBearerToken();
+        var userId = GetUserId();
 
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven"
-            });
-        }
-
-        var createdCollection = await _collectionService.CreateAsync(collection, token);
-
-        if (createdCollection == null)
-        {
-            return Unauthorized(new
-            {
-                Message = "Geen geldige sessie gevonden!"
-            });
-        }
+        Console.WriteLine("Create Collection Test 4");
+        var createdCollection = await _collectionService.CreateAsync(collection, userId);
         
-        return CreatedAtAction(nameof(GetSpecificCollection), new { id = createdCollection.Id }, createdCollection);
+        Console.WriteLine("Create Collection Test 5");
+        return CreatedAtAction(nameof(GetSpecificCollection), new { collectionId = createdCollection.Id }, createdCollection);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCollection(int id, [FromBody] Collection collection)
+    [RequireAuth]
+    [HttpPut("{collectionId}")]
+    public async Task<IActionResult> UpdateCollection(int collectionId, [FromBody] Collection collection)
     {
         if (!ModelState.IsValid)
         {
@@ -114,23 +84,16 @@ public class CollectionController : ControllerBase
                 Errors = GetValidationErrors()
             });
         }
-
-        var token = GetBearerToken();
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven"
-            });
-        }
         
-        var updatedCollection = await _collectionService.UpdateAsync(id, collection, token);
+        var userId = GetUserId();
+        
+        var updatedCollection = await _collectionService.UpdateAsync(collectionId, collection, userId);
 
         if (!updatedCollection)
         {
             return NotFound(new
             {
-                Message = $"Collectie met id {id} is niet gevonden, is niet van jou, of je sessie is ongeldig."
+                Message = $"Collectie met id {collectionId} is niet gevonden of is niet van jou."
             });
         }
 
@@ -140,39 +103,32 @@ public class CollectionController : ControllerBase
         });
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCollection(int id)
+    [RequireAuth]
+    [HttpDelete("{collectionId}")]
+    public async Task<IActionResult> DeleteCollection(int collectionId)
     {
-        var token = GetBearerToken();
-
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven."
-            });
-        }
-
-        var deleted = await _collectionService.DeleteAsync(id, token);
+        var userId = GetUserId();
+        var deleted = await _collectionService.DeleteAsync(collectionId, userId);
 
         if (!deleted)
         {
             return NotFound(new
             {
-                Message = $"Collectie met id {id} is niet gevonden, is niet van jou, of je sessie is ongeldig."
+                Message = $"Collectie met id {collectionId} is niet gevonden of is niet van jou"
             });
         }
 
         return Ok(new
         {
-            Message = $"Collectie met id {id} is succesvol verwijderd."
+            Message = $"Collectie met id {collectionId} is succesvol verwijderd."
         });
     }
 
+    [RequireAuth]
     [HttpGet("{collectionId}/games")]
     public async Task<IActionResult> GetGamesInCollection(int collectionId)
     {
-        var token = GetBearerToken();
+        var token = GetToken();
         if (string.IsNullOrWhiteSpace(token))
         {
             return BadRequest(new
@@ -194,10 +150,11 @@ public class CollectionController : ControllerBase
         return Ok(games);
     }
 
+    [RequireAuth]
     [HttpPost("{collectionId}/games/{gameId}")]
     public async Task<IActionResult> AddGameToCollection(int collectionId, int gameId)
     {
-        var token = GetBearerToken();
+        var token = GetToken();
         if (string.IsNullOrWhiteSpace(token))
         {
             return BadRequest(new
@@ -222,10 +179,11 @@ public class CollectionController : ControllerBase
         });
     }
 
+    [RequireAuth]
     [HttpDelete("{collectionId}/games/{gameId}")]
     public async Task<IActionResult> RemoveGameFromCollection(int collectionId, int gameId)
     {
-        var token = GetBearerToken();
+        var token = GetToken();
         if (string.IsNullOrWhiteSpace(token))
         {
             return BadRequest(new
@@ -260,22 +218,5 @@ public class CollectionController : ControllerBase
             );
     }
 
-    private string? GetBearerToken()
-    {
-        var authorizationHeader = Request.Headers.Authorization.ToString();
-
-        if (string.IsNullOrWhiteSpace(authorizationHeader))
-        {
-            return null;
-        }
-
-        const string bearerPrefix = "Bearer ";
-
-        if (!authorizationHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-
-        return authorizationHeader[bearerPrefix.Length..].Trim();
-    }
+    
 }

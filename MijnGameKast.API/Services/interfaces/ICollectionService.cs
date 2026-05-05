@@ -4,9 +4,9 @@ namespace MijnGameKast.API.Services.Interfaces;
 
 public interface ICollectionService
 {
-    Task<List<Collection>?> GetMyCollectionsAsync(string token);
-    Task<Collection?> GetByIdAsync(int id, string token);
-    Task<Collection?> CreateAsync(Collection collection, string token);
-    Task<bool> UpdateAsync(int id, Collection collection, string token);
-    Task<bool> DeleteAsync(int id, string token);
+    Task<List<Collection>?> GetMyCollectionsAsync(int? userId);
+    Task<Collection?> GetByIdAsync(int id, int? userId);
+    Task<Collection?> CreateAsync(Collection collection, int? userId);
+    Task<bool> UpdateAsync(int id, Collection collection, int? userId);
+    Task<bool> DeleteAsync(int id, int? userId);
 }

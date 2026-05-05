@@ -8,6 +8,7 @@ using MijnGameKast.API.Data.Repositories;
 using MijnGameKast.API.Data.Seeders;
 using MijnGameKast.API.Services;
 using MijnGameKast.API.Services.Interfaces;
+using MijnGameKast.API.Middleware;
 using Scalar.AspNetCore;
 
 namespace MijnGameKast.API;
@@ -108,9 +109,13 @@ public class Program
             app.MapScalarApiReference();
         }
 
+        
         app.UseHttpsRedirection();
         app.UseCors("FrontenDev");
         app.UseAuthorization();
+
+        app.UseMiddleware<TokenMiddleware>();
+        
         app.MapControllers();
 
         using (var scope = app.Services.CreateScope())
