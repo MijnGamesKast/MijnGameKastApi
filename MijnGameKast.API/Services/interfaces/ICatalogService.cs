@@ -1,4 +1,5 @@
 using MijnGameKast.API.Data.Models;
+using MijnGameKast.API.Services.Results;
 
 namespace MijnGameKast.API.Services.Interfaces;
 
@@ -8,5 +9,5 @@ public interface ICatalogService
     Task<Game?> GetByIdAsync(int id);
     Task<Game> AddGameAsync(Game game);
     Task<bool> UpdateGameAsync(int id, Game game);
-    Task<bool> DeleteGameAsync(int id);
+    Task<ServiceResult> DeleteGameAsync(int id, int? userId);
 }
