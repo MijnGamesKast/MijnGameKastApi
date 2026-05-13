@@ -18,25 +18,31 @@ public class CatalogService : ICatalogService
         _userRepository = userRepository;
     }
 
-    public Task<List<Game>> GetAllAsync()
+    public async Task<List<Game>> GetAllAsync()
     {
-        return _catalogRepository.GetAllAsync();
+        return await _catalogRepository.GetAllAsync();
     }
 
-    public Task<Game?> GetByIdAsync(int id)
+    public async Task<Game?> GetByIdAsync(int id)
     {
-        return _catalogRepository.GetByIdAsync(id);
+        return await _catalogRepository.GetByIdAsync(id);
     }
 
-    public Task<Game> AddGameAsync(Game game)
+    public async Task<Game> AddGameAsync(Game game)
     {
-        return _catalogRepository.AddGameAsync(game);
+        return await _catalogRepository.AddGameAsync(game);
     }
 
-    public async Task<bool> UpdateGameAsync(int id, Game game)
+    public async Task<ServiceResult> UpdateGameAsync(int gameId, Game game)
     {
-        game.Id = id;
-        return await _catalogRepository.UpdateGameAsync(game);
+        game.Id = gameId;
+        var result = await _catalogRepository.UpdateGameAsync(game);
+        
+        return result switch
+        {
+            true => new ServiceResult { Success = true, Message = $"game: {game.Title} is aangepast", Type = ServiceResultType.Success },
+            false => new ServiceResult { Message = $"er kan geen game gevonden worden met het id: {game.Id}", Type = ServiceResultType.BadRequest },
+        };
     }
 
     public async Task<ServiceResult> DeleteGameAsync(int id, int? userId)

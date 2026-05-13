@@ -20,22 +20,6 @@ public class CatalogController : CustomBaseController
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        // Test the controller
-        Console.WriteLine("Get all games from catalog");
-        var token = GetToken();
-        Console.WriteLine($"Token: {token}");
-
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            Console.WriteLine("Token is niet ingevuld!");
-        }
-        else
-        {
-            Console.WriteLine("Token is ingevuld!");
-        }
-        
-        
-        //
         var games = await _catalogService.GetAllAsync();
         return Ok(games);
     }
@@ -56,25 +40,20 @@ public class CatalogController : CustomBaseController
     [HttpPost]
     public async Task<IActionResult> AddGame([FromBody] Game game)
     {
+        // Add the extra info to the game (user that added it and everything)
+        var userId = GetUserId();
+        game.UserId = userId ?? null;
+        
         // Check if the game is valid for the Model
         if (!ModelState.IsValid)
         {
-            var errors = ModelState
-                .Where(x => x.Value.Errors.Count > 0)
-                .Select(x => new
-                {
-                    field = x.Key,
-                    errors = x.Value!.Errors.Select(e => e.ErrorMessage).ToList()
-                })
-                .ToList();
-            
             return BadRequest(new
             {
-                message = "De opgegeven game is ongeldig.",
-                validationErrors = errors
+                Message = "De gamegegevens zijn ongeldig",
+                Errors = GetValidationErrors()
             });
         }
-
+        
         var createdGame = await _catalogService.AddGameAsync(game);
 
         return CreatedAtAction(nameof(GetById), new { id = createdGame.Id }, createdGame);
@@ -84,41 +63,25 @@ public class CatalogController : CustomBaseController
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateGame(int id, [FromBody] Game game)
     {
-        if (!ModelState.IsValid)
+        // Add the user to the game model
+        var userId = GetUserId();
+        game.UserId = userId;
+        
+        if (!ModelState.IsValid) // Check if the model is made correct
         {
-            var errors = ModelState
-                .Where(x => x.Value.Errors.Count > 0)
-                .Select(x => new
-                {
-                    field = x.Key,
-                    errors = x.Value!.Errors.Select(e => e.ErrorMessage).ToList()
-                })
-                .ToList();
-            
             return BadRequest(new
             {
-                message = "De opgegeven game is ongeldig.",
-                validationErrors = errors
+                Message = "De gamegegevens zijn ongeldig",
+                Errors = GetValidationErrors()
             });
         }
         
-        var updatedGame = await _catalogService.UpdateGameAsync(id, game);
+        var result = await _catalogService.UpdateGameAsync(id, game);
 
-        if (!updatedGame)
-        {
-            return NotFound(new
-            {
-                message = $"Game met id {id} is niet gevonden!"
-            });
-        }
-        
-        return Ok(new
-        {
-            message = $"Game met id {id} is succesvol gewijzigd!"
-        });
+        return ToActionResult(result);
     }
 
-    [RequireAuth(ModeratorOnly = true)] 
+    [RequireAuth(ModeratorOnly = true)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(int id)
     {
