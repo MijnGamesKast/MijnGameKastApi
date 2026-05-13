@@ -15,7 +15,7 @@ public class CatalogRepository : ICatalogRepository
     
     public async Task<List<Game>> GetAllAsync()
     {
-        return await _dbContext.Games.ToListAsync();
+        return await _dbContext.Games.OrderBy(g => g.Id).ToListAsync();
     }
 
     public async Task<Game?> GetByIdAsync(int id)
