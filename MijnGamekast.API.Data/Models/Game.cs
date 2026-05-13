@@ -16,18 +16,12 @@ public class Game
     [Required(ErrorMessage = "Vul uw beschrijving in.")]
     public string Description { get; set; } = string.Empty;
     
-    // [Display(Name = "Gebruiker")]
-    // public int UserId { get; set; }
-    //
-    // [Display(Name = "Platform")] 
-    // public List<Platform> Platforms { get; set; } = new();
-    //
-    // [Display(Name = "Genre")]
-    // public List<Genre> Genres { get; set; } = new();
-    //
-    // [Display(Name = "Game Status")]
-    // public GameStatus Status { get; set; } = GameStatus.Pending;
-    //
-    // [Display(Name = "Aanmaakdatum")]
-    // public DateTime CreatedAt { get; set; }
+    [Display(Name = "Gebruiker")]
+    public int? UserId { get; set; }
+    
+    [Display(Name = "Game Status")]
+    public GameStatus Status { get; set; } = GameStatus.Pending;
+    
+    [Display(Name = "Aanmaakdatum")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
