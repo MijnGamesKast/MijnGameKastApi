@@ -89,6 +89,10 @@ public class Program
         builder.Services.AddScoped<ICollectionService, CollectionService>();
         builder.Services.AddScoped<ICollectionGameRepository, CollectionGameRepository>();
         builder.Services.AddScoped<ICollectionGameService, CollectionGameService>();
+        builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+        builder.Services.AddScoped<IGenreService, GenreService>();
+        builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
+        builder.Services.AddScoped<IPlatformService, PlatformService>();
 
         builder.Services.AddCors(options =>
         {
