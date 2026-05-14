@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MijnGameKast.API.Attributes;
 using MijnGameKast.API.Data.Models;
+using MijnGameKast.API.Data.Models.Catalog;
 using MijnGameKast.API.Services.Interfaces;
 using MijnGameKast.API.Services.Results;
 
@@ -16,21 +17,24 @@ public class CatalogController : CustomBaseController
     {
         _catalogService = catalogService;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var games = await _catalogService.GetAllAsync();
-        return Ok(games);
+        return Ok(await _catalogService.GetAllAsync());
     }
-    
-    [HttpGet("{id}")] 
+
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var game = await _catalogService.GetByIdAsync(id);
+
         if (game == null)
         {
-            return NoContent();
+            return NotFound(new
+            {
+                Message = $"Game met id ({id}) is niet gevonden!"
+            });
         }
 
         return Ok(game);
@@ -38,46 +42,38 @@ public class CatalogController : CustomBaseController
 
     [RequireAuth]
     [HttpPost]
-    public async Task<IActionResult> AddGame([FromBody] Game game)
+    public async Task<IActionResult> AddGame([FromBody] CreateGameRequest request)
     {
-        // Add the extra info to the game (user that added it and everything)
-        var userId = GetUserId();
-        game.UserId = userId ?? null;
-        
-        // Check if the game is valid for the Model
         if (!ModelState.IsValid)
         {
             return BadRequest(new
-            {
-                Message = "De gamegegevens zijn ongeldig",
-                Errors = GetValidationErrors()
-            });
+                {
+                    Message = "De ingevoerde gegevens zijn ongeldig!",
+                    Errors = GetValidationErrors()
+                });
         }
-        
-        var createdGame = await _catalogService.AddGameAsync(game);
+
+        var userId = GetUserId();
+
+        var createdGame = await _catalogService.AddGameAsync(request, userId);
 
         return CreatedAtAction(nameof(GetById), new { id = createdGame.Id }, createdGame);
     }
 
     [RequireAuth(ModeratorOnly = true)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateGame(int id, [FromBody] Game game)
+    public async Task<IActionResult> UpdateGame(int id, [FromBody] UpdateGameRequest request)
     {
-        // Add the user to the game model
-        var userId = GetUserId();
-        game.UserId = userId;
-        
-        if (!ModelState.IsValid) // Check if the model is made correct
+        if (!ModelState.IsValid)
         {
             return BadRequest(new
             {
-                Message = "De gamegegevens zijn ongeldig",
+                Message = "De ingevoerde gegevens zijn ongeldig!",
                 Errors = GetValidationErrors()
             });
         }
         
-        var result = await _catalogService.UpdateGameAsync(id, game);
-
+        var result = await _catalogService.UpdateGameAsync(id, request);
         return ToActionResult(result);
     }
 
@@ -85,8 +81,7 @@ public class CatalogController : CustomBaseController
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(int id)
     {
-        int? userId = GetUserId();
-        var result = await _catalogService.DeleteGameAsync(id, userId);
+        var result = await _catalogService.DeleteGameAsync(id);
         return ToActionResult(result);
     }
 }
