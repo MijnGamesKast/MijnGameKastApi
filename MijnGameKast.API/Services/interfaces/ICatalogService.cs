@@ -11,4 +11,6 @@ public interface ICatalogService
     Task<GameResponse?> AddGameAsync(CreateGameRequest request, int? userId);
     Task<ServiceResult> UpdateGameAsync(int id, UpdateGameRequest request);
     Task<ServiceResult> DeleteGameAsync(int id);
+    Task<ServiceResult> ApproveGameAsync(int id);
+    Task<ServiceResult> RejectGameAsync(int id);
 }

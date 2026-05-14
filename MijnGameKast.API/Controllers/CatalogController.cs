@@ -84,4 +84,21 @@ public class CatalogController : CustomBaseController
         var result = await _catalogService.DeleteGameAsync(id);
         return ToActionResult(result);
     }
+
+    [RequireAuth(ModeratorOnly = true)]
+    [HttpPatch("{id}/approve")]
+    public async Task<IActionResult> ApproveGame(int id)
+    {
+        var result = await _catalogService.ApproveGameAsync(id);
+        return ToActionResult(result);
+    }
+
+
+    [RequireAuth(ModeratorOnly = true)]
+    [HttpPatch("{id}/reject")]
+    public async Task<IActionResult> RejectGame(int id)
+    {
+        var result = await _catalogService.RejectGameAsync(id);
+        return ToActionResult(result);
+    }
 }

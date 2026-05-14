@@ -14,6 +14,4 @@ public class UpdateGameRequest
     [MaxLength(2000, ErrorMessage = "De beschrijving mag maximaal {1} tekens bevatten.")]
     [Required(ErrorMessage = "Vul de beschrijving in.")]
     public string Description { get; set; } = string.Empty;
-    
-    public GameStatus Status { get; set; } = GameStatus.Pending;
 }
