@@ -6,5 +6,6 @@ public enum ServiceResultType
     NotFound,
     Unauthorized,
     Forbidden,
-    BadRequest
+    BadRequest,
+    Conflict
 }

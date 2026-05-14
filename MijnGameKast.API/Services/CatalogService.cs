@@ -162,9 +162,7 @@ public class CatalogService : ICatalogService
     private async Task<GameResponse> CreateGameResponse(Game game)
     {
         var gameId = game.Id!.Value;
-
-        // var platforms = await _gamePlatformRepository.GetByPlatformIdAsync(gameId);
-        // var genres = await _gameGenreRepository.GetGenresByGameIdAsync(gameId);
+        
         var platforms = await _gamePlatformRepository.GetPlatformByGameIdAsync(gameId);
         var genres = await _gameGenreRepository.GetGenreByGameIdAsync(gameId);
 

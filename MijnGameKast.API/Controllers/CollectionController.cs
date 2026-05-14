@@ -128,22 +128,13 @@ public class CollectionController : CustomBaseController
     [HttpGet("{collectionId}/games")]
     public async Task<IActionResult> GetGamesInCollection(int collectionId)
     {
-        var token = GetToken();
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven."
-            });
-        }
-
-        var games = await _collectionGameService.GetGamesByCollectionIdAsync(collectionId, token);
-
+        var userId = GetUserId();
+        var games = await _collectionGameService.GetGamesByCollectionIdAsync(collectionId, userId);
         if (games == null)
         {
             return NotFound(new
             {
-                Message = $"Collectie met id {collectionId} is niet gevonden, is niet van jou, of je sessie is ongeldig/verlopen."
+                Message = $"Collectie met id {collectionId} kan niet worden gevonden"
             });
         }
 
@@ -154,69 +145,17 @@ public class CollectionController : CustomBaseController
     [HttpPost("{collectionId}/games/{gameId}")]
     public async Task<IActionResult> AddGameToCollection(int collectionId, int gameId)
     {
-        var token = GetToken();
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven."
-            });
-        }
-
-        var added = await _collectionGameService.AddGameToCollectionAsync(collectionId, gameId, token);
-
-        if (!added)
-        {
-            return BadRequest(new
-            {
-                Message = $"Game met id {gameId} kon niet aan collectie ({collectionId}) worden toegevoegd"
-            });
-        }
-
-        return Ok(new
-        {
-            Message = $"Game met id {gameId} is succesvol toegevoegd aan collectie ({collectionId})"
-        });
+        var userId = GetUserId();
+        var result = await _collectionGameService.AddGameToCollectionAsync(collectionId, gameId, userId);
+        return ToActionResult(result);
     }
 
     [RequireAuth]
     [HttpDelete("{collectionId}/games/{gameId}")]
     public async Task<IActionResult> RemoveGameFromCollection(int collectionId, int gameId)
     {
-        var token = GetToken();
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest(new
-            {
-                Message = "Er is geen token meegegeven."
-            });
-        }
-
-        var removed = await _collectionGameService.RemoveGameFromCollectionAsync(collectionId, gameId, token);
-
-        if (!removed)
-        {
-            return NotFound(new
-            {
-                Message = $"Game me id {gameId} is niet gevonden in collectie ({collectionId})"
-            });
-        }
-
-        return Ok(new
-        {
-            Message = $"Game met Id {gameId} is succesvol verwijderd uit de collectie ({collectionId})"
-        });
+        var userId = GetUserId();
+        var result = await _collectionGameService.RemoveGameFromCollectionAsync(collectionId, gameId, userId);
+        return ToActionResult(result);
     }
-    
-    private Dictionary<string, List<string>> GetValidationErrors()
-    {
-        return ModelState
-            .Where(x => x.Value is not null && x.Value.Errors.Count > 0)
-            .ToDictionary(
-                x => x.Key,
-                x => x.Value!.Errors.Select(e => e.ErrorMessage).ToList()
-            );
-    }
-
-    
 }
