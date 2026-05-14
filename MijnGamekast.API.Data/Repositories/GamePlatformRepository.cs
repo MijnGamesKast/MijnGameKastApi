@@ -23,6 +23,18 @@ public class GamePlatformRepository : IGamePlatformRepository
         return await _dbContext.GamePlatforms.Where(gp => gp.PlatformId == platformId).ToListAsync();
     }
 
+    public async Task<List<Platform>> GetPlatformByGameIdAsync(int gameId)
+    {
+        return await _dbContext.GamePlatforms
+            .Where(gp => gp.GameId == gameId)
+            .Join(
+                _dbContext.Platforms,
+                gp => gp.PlatformId,
+                p => p.Id,
+                (gp, p) => p)
+            .ToListAsync();
+    }
+
     public async Task<GamePlatform?> GetByIdsAsync(int gameId, int platformId)
     {
         return await _dbContext.GamePlatforms.FirstOrDefaultAsync(gp =>
