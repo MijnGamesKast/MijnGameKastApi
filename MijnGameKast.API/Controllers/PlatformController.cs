@@ -15,16 +15,14 @@ public class PlatformController : CustomBaseController
     {
         _platformService = platformService;
     }
-
-    [RequireAuth(ModeratorOnly = true)]
+    
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var platforms = await _platformService.GetAllAsync();
         return Ok(platforms);
     }
-
-    [RequireAuth(ModeratorOnly = true)]
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetbyId(int id)
     {

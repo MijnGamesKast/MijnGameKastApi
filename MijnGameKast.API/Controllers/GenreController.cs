@@ -16,15 +16,13 @@ public class GenreController : CustomBaseController
         _genreService = genreService;
     }
     
-    [RequireAuth(ModeratorOnly = true)]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var genres = await _genreService.GetAllAsync();
         return Ok(genres);
     }
-
-    [RequireAuth(ModeratorOnly = true)]
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
