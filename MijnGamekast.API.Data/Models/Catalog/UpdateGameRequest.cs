@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MijnGameKast.API.Data.Models.Enums;
 
 namespace MijnGameKast.API.Data.Models.Catalog;
 
@@ -13,8 +14,6 @@ public class UpdateGameRequest
     [MaxLength(2000, ErrorMessage = "De beschrijving mag maximaal {1} tekens bevatten.")]
     [Required(ErrorMessage = "Vul de beschrijving in.")]
     public string Description { get; set; } = string.Empty;
-
-    public List<int> PlatformIds { get; set; } = new();
     
-    public List<int> GenreIds { get; set; } = new();
+    public GameStatus Status { get; set; } = GameStatus.Pending;
 }
