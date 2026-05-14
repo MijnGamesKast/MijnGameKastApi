@@ -23,6 +23,18 @@ public class GameGenreRepository : IGameGenreRepository
         return await _dbContext.GameGenres.Where(gg => gg.GenreId == genreId).ToListAsync();
     }
 
+    public async Task<List<Genre>> GetGenreByGameIdAsync(int gameId)
+    {
+        return await _dbContext.GameGenres
+            .Where(gg => gg.GameId == gameId)
+            .Join(
+                _dbContext.Genres,
+                gg => gg.GenreId,
+                g => g.Id,
+                (gg, g) => g)
+            .ToListAsync();
+    }
+
     public async Task<GameGenre?> GetByIdsAsync(int gameId, int genreId)
     {
         return await _dbContext.GameGenres.FirstOrDefaultAsync(gg => gg.GameId == gameId && gg.GenreId == genreId);
