@@ -16,6 +16,7 @@ public class CustomBaseController : ControllerBase
             ServiceResultType.Unauthorized => Unauthorized(result),
             ServiceResultType.Forbidden => StatusCode(403, result),
             ServiceResultType.BadRequest => BadRequest(result),
+            ServiceResultType.Conflict => Conflict(result),
             _ => StatusCode(500, result)
         };
     }
