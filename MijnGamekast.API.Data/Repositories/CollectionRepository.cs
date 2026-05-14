@@ -63,4 +63,12 @@ public class CollectionRepository : ICollectionRepository
 
         return true;
     }
+
+    public async Task<List<Collection>> GetPublicCollectionsAsync()
+    {
+        return await _dbContext.Collections
+            .Where(c => c.IsPublic)
+            .OrderBy(c => c.Id)
+            .ToListAsync();  
+    }
 }

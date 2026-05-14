@@ -9,4 +9,5 @@ public interface ICollectionRepository
     Task<Collection> AddAsync(Collection collection);
     Task<bool> UpdateAsync(Collection collection);
     Task<bool> DeleteAsync(int id);
+    Task<List<Collection>> GetPublicCollectionsAsync();
 }
