@@ -1,5 +1,8 @@
 using MijnGameKast.API.Data.Models;
+using MijnGameKast.API.Data.Models.Catalog;
 using MijnGameKast.API.Data.Interfaces;
+using MijnGamekast.API.Data.Migrations;
+using MijnGameKast.API.Data.Models.Enums;
 using MijnGameKast.API.Services.Interfaces;
 using MijnGameKast.API.Services.Results;
 
@@ -8,83 +11,173 @@ namespace MijnGameKast.API.Services;
 public class CatalogService : ICatalogService
 {
     private readonly ICatalogRepository _catalogRepository;
-    private readonly ISessionRepository _sessionRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly IGamePlatformRepository _gamePlatformRepository;
+    private readonly IGameGenreRepository _gameGenreRepository;
+    private readonly ICollectionGameRepository _collectionGameRepository;
 
-    public CatalogService(ICatalogRepository catalogRepository, ISessionRepository sessionRepository, IUserRepository userRepository)
+    public CatalogService(
+        ICatalogRepository catalogRepository,
+        IGamePlatformRepository gamePlatformRepository, 
+        IGameGenreRepository gameGenreRepository, 
+        ICollectionGameRepository collectionGameRepository)
     {
         _catalogRepository = catalogRepository;
-        _sessionRepository = sessionRepository;
-        _userRepository = userRepository;
+        _gamePlatformRepository = gamePlatformRepository;
+        _gameGenreRepository = gameGenreRepository;
+        _collectionGameRepository = collectionGameRepository;
     }
 
-    public Task<List<Game>> GetAllAsync()
+    public async Task<List<GameResponse>> GetAllAsync()
     {
-        return _catalogRepository.GetAllAsync();
-    }
+        var games = await _catalogRepository.GetAllAsync();
 
-    public Task<Game?> GetByIdAsync(int id)
-    {
-        return _catalogRepository.GetByIdAsync(id);
-    }
+        var gameResponses = new List<GameResponse>();
 
-    public Task<Game> AddGameAsync(Game game)
-    {
-        return _catalogRepository.AddGameAsync(game);
-    }
-
-    public async Task<bool> UpdateGameAsync(int id, Game game)
-    {
-        game.Id = id;
-        return await _catalogRepository.UpdateGameAsync(game);
-    }
-
-    public async Task<ServiceResult> DeleteGameAsync(int id, int? userId)
-    {
-        if (userId == null)
+        foreach (var game in games)
         {
-            return new ServiceResult
-            {
-                Message = "Gebruiker niet gevonden",
-                Type = ServiceResultType.BadRequest
-            };
-        }
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            return new ServiceResult
-            {
-                Message = "Gebruiker bestaat niet",
-                Type = ServiceResultType.BadRequest
-            };
+            gameResponses.Add(await CreateGameResponse(game));
         }
 
-        if (user.Role != UserRole.Moderator)
+        return gameResponses;
+    }
+
+    public async Task<GameResponse?> GetByIdAsync(int id)
+    {
+        var game = await _catalogRepository.GetByIdAsync(id);
+
+        if (game == null)
         {
-            return new ServiceResult
-            {
-                Message = "Gebruiker heeft niet de juiste rechten",
-                Type = ServiceResultType.Unauthorized
-            };
+            return null;
         }
 
-        var deletedGame = await _catalogRepository.DeleteGameAsync(id);
+        return await CreateGameResponse(game);
+    }
 
-        if (deletedGame == false)
+    public async Task<GameResponse?> AddGameAsync(CreateGameRequest request, int? userId)
+    {
+        var game = new Game
         {
-            // Game does not exist
+            Title = request.Title,
+            Description = request.Description,
+            UserId = userId,
+            Status = GameStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var createdGame = await _catalogRepository.AddGameAsync(game);
+        var gameId = createdGame.Id!.Value;
+        var gamePlatforms = request.PlatformIds
+            .Distinct()
+            .Select(platformId => new GamePlatform
+            {
+                GameId = gameId,
+                PlatformId = platformId
+            })
+            .ToList();
+
+        var gameGenres = request.GenreIds
+            .Distinct()
+            .Select(genreId => new GameGenre
+            {
+                GameId = gameId,
+                GenreId = genreId
+            })
+            .ToList();
+
+
+        if (gamePlatforms.Count > 0)
+        {
+            await _gamePlatformRepository.AddMultipleAsync(gamePlatforms);
+        }
+
+        if (gameGenres.Count > 0)
+        {
+            await _gameGenreRepository.AddMultipleAsync(gameGenres);
+        }
+
+        return await CreateGameResponse(createdGame);
+    }
+
+    public async Task<ServiceResult> UpdateGameAsync(int id, UpdateGameRequest request)
+    {
+        var existingGame = await _catalogRepository.GetByIdAsync(id);
+
+        if (existingGame == null)
+        {
             return new ServiceResult
             {
-                Message = "Spel bestaat niet",
+                Message = $"Game met id ({id}) is niet gevonden!",
                 Type = ServiceResultType.NotFound
             };
         }
+        
+        existingGame.Title = request.Title;
+        existingGame.Description = request.Description;
+        existingGame.Status = request.Status;
 
-        return new ServiceResult
+        var updated = await _catalogRepository.UpdateGameAsync(existingGame);
+
+        return updated switch
         {
-            Success = true,
-            Message = $"Game ({id}) is succesvol verwijderd",
-            Type = ServiceResultType.Success
+            true => new ServiceResult { Success = true, Message = $"Game met id ({id}) is succesvol bijgewerkt.", Type = ServiceResultType.Success },
+            false => new ServiceResult { Message = $"Game met id ({id}) kon niet worden bijgewerkt.", Type = ServiceResultType.BadRequest }
+        };
+    }
+
+    public async Task<ServiceResult> DeleteGameAsync(int id)
+    {
+        var existingGame = await _catalogRepository.GetByIdAsync(id);
+
+        if (existingGame == null)
+        {
+            return new ServiceResult
+            {
+                Message = $"Game met id ({id}) is niet gevonden!",
+                Type = ServiceResultType.NotFound
+            };
+        }
+        
+        await _gamePlatformRepository.DeleteByGameIdAsync(id);
+        await _gameGenreRepository.DeleteByGameIdAsync(id);
+        await _collectionGameRepository.DeleteByGameIdAsync(id);
+        
+        var deleted = await _catalogRepository.DeleteGameAsync(id);
+
+        return deleted switch
+        {
+            true => new ServiceResult
+            {
+                Success = true,
+                Message = $"Game met id ({id}) is succesvol verwijderd.",
+                Type = ServiceResultType.Success
+            },
+            false => new ServiceResult
+            {
+                Message = $"Game met id ({id}) kon niet worden verwijderd.", 
+                Type = ServiceResultType.BadRequest
+            }
+        };
+    }
+
+    private async Task<GameResponse> CreateGameResponse(Game game)
+    {
+        var gameId = game.Id!.Value;
+
+        // var platforms = await _gamePlatformRepository.GetByPlatformIdAsync(gameId);
+        // var genres = await _gameGenreRepository.GetGenresByGameIdAsync(gameId);
+        var platforms = await _gamePlatformRepository.GetPlatformByGameIdAsync(gameId);
+        var genres = await _gameGenreRepository.GetGenreByGameIdAsync(gameId);
+
+        return new GameResponse
+        {
+            Id = game.Id,
+            Title = game.Title,
+            Description = game.Description,
+            UserId = game.UserId,
+            Status = game.Status.ToString(),
+            CreatedAt = game.CreatedAt,
+            Platforms = platforms,
+            Genres = genres
         };
     }
 }

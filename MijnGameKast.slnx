@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="MijnGamekast.API.Data\MijnGamekast.API.Data.csproj" Type="Classic C#" />
-  <Project Path="MijnGameKast.API\MijnGameKast.API.csproj" Type="Classic C#" />
+  <Project Path="MijnGamekast.API.Data\MijnGamekast.API.Data.csproj" />
+  <Project Path="MijnGameKast.API\MijnGameKast.API.csproj" />
 </Solution>

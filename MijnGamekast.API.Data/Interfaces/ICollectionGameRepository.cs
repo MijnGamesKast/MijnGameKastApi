@@ -9,4 +9,5 @@ public interface ICollectionGameRepository
     Task<CollectionGame> AddAsync(CollectionGame collectionGame);
     Task<bool> DeleteAsync(int collectionId, int gameId);
     Task<List<Game>> GetGamesByCollectionIdAsync(int collectionId);
+    Task<int> DeleteByGameIdAsync(int gameId);
 }
