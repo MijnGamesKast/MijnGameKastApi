@@ -12,7 +12,7 @@ public class GameResponse
 
     public int? UserId { get; set; }
     
-    public string status { get; set; }
+    public string Status { get; set; }
     
     public DateTime CreatedAt { get; set; }
 
