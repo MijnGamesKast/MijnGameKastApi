@@ -60,4 +60,21 @@ public class CollectionGameRepository : ICollectionGameRepository
             )
             .ToListAsync();
     }
+
+    public async Task<int> DeleteByGameIdAsync(int gameId)
+    {
+        var collectionGames = await _dbContext.CollectionGames
+            .Where(cg => cg.GameId == gameId)
+            .ToListAsync();
+
+        if (collectionGames.Count == 0)
+        {
+            return 0;
+        }
+
+        _dbContext.CollectionGames.RemoveRange(collectionGames);
+        await _dbContext.SaveChangesAsync();
+
+        return collectionGames.Count;
+    }
 }
