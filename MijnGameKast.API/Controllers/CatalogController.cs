@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MijnGameKast.API.Attributes;
 using MijnGameKast.API.Data.Models;
 using MijnGameKast.API.Data.Models.Catalog;
+using MijnGameKast.API.Data.Models.Enums;
 using MijnGameKast.API.Services.Interfaces;
 using MijnGameKast.API.Services.Results;
 
@@ -100,5 +101,12 @@ public class CatalogController : CustomBaseController
     {
         var result = await _catalogService.RejectGameAsync(id);
         return ToActionResult(result);
+    }
+
+    [RequireAuth(ModeratorOnly = true)]
+    [HttpGet("status/{status}")]
+    public async Task<IActionResult> GetByStatus(GameStatus status)
+    {
+        return Ok(await _catalogService.GetByStatusAsync(status));
     }
 }
