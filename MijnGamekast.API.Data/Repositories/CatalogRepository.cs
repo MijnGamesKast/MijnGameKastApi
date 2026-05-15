@@ -1,6 +1,7 @@
 using MijnGameKast.API.Data.Interfaces;
 using MijnGameKast.API.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using MijnGameKast.API.Data.Models.Enums;
 
 namespace MijnGameKast.API.Data.Repositories;
 
@@ -61,5 +62,13 @@ public class CatalogRepository : ICatalogRepository
         await _dbContext.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<List<Game>> GetByStatusAsync(GameStatus status)
+    {
+        return await _dbContext.Games
+            .Where(g => g.Status == status)
+            .OrderBy(g => g.Id)
+            .ToListAsync();
     }
 }
