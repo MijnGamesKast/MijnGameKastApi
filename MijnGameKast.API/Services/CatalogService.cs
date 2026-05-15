@@ -204,6 +204,20 @@ public class CatalogService : ICatalogService
         };
     }
 
+    public async Task<List<GameResponse>> GetByStatusAsync(GameStatus status)
+    {
+        var games = await _catalogRepository.GetByStatusAsync(status);
+        
+        var gameResponses = new List<GameResponse>();
+
+        foreach (var game in games)
+        {
+            gameResponses.Add(await CreateGameResponse(game));
+        }
+
+        return gameResponses;
+    }
+
     private async Task<GameResponse> CreateGameResponse(Game game)
     {
         var gameId = game.Id!.Value;
