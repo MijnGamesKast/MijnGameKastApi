@@ -113,7 +113,6 @@ public class CatalogService : ICatalogService
         
         existingGame.Title = request.Title;
         existingGame.Description = request.Description;
-        existingGame.Status = request.Status;
 
         var updated = await _catalogRepository.UpdateGameAsync(existingGame);
 
@@ -157,6 +156,66 @@ public class CatalogService : ICatalogService
                 Type = ServiceResultType.BadRequest
             }
         };
+    }
+
+    public async Task<ServiceResult> ApproveGameAsync(int id)
+    {
+        var existingGame = await _catalogRepository.GetByIdAsync(id);
+
+        if (existingGame == null)
+        {
+            return new ServiceResult
+            {
+                Message = $"Game met id ({id}) is niet gevonden!",
+                Type = ServiceResultType.NotFound
+            };
+        }
+
+        existingGame.Status = GameStatus.Approved;
+        var updated = await _catalogRepository.UpdateGameAsync(existingGame);
+
+        return updated switch
+        {
+            true => new ServiceResult { Success = true, Message = $"Game met id ({id}) is succesvol bijgewerkt.", Type = ServiceResultType.Success },
+            false => new ServiceResult { Message = $"Game met id ({id}) kon niet worden bijgewerkt.", Type = ServiceResultType.BadRequest }
+        };
+    }
+
+    public async Task<ServiceResult> RejectGameAsync(int id)
+    {
+        var existingGame = await _catalogRepository.GetByIdAsync(id);
+
+        if (existingGame == null)
+        {
+            return new ServiceResult
+            {
+                Message = $"Game met id ({id}) is niet gevonden!",
+                Type = ServiceResultType.NotFound
+            };
+        }
+
+        existingGame.Status = GameStatus.Rejected;
+        var updated = await _catalogRepository.UpdateGameAsync(existingGame);
+
+        return updated switch
+        {
+            true => new ServiceResult { Success = true, Message = $"Game met id ({id}) is succesvol bijgewerkt.", Type = ServiceResultType.Success },
+            false => new ServiceResult { Message = $"Game met id ({id}) kon niet worden bijgewerkt.", Type = ServiceResultType.BadRequest }
+        };
+    }
+
+    public async Task<List<GameResponse>> GetByStatusAsync(GameStatus status)
+    {
+        var games = await _catalogRepository.GetByStatusAsync(status);
+        
+        var gameResponses = new List<GameResponse>();
+
+        foreach (var game in games)
+        {
+            gameResponses.Add(await CreateGameResponse(game));
+        }
+
+        return gameResponses;
     }
 
     private async Task<GameResponse> CreateGameResponse(Game game)

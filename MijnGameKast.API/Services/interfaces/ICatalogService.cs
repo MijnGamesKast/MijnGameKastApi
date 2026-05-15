@@ -1,5 +1,6 @@
 using MijnGameKast.API.Data.Models;
 using MijnGameKast.API.Data.Models.Catalog;
+using MijnGameKast.API.Data.Models.Enums;
 using MijnGameKast.API.Services.Results;
 
 namespace MijnGameKast.API.Services.Interfaces;
@@ -11,4 +12,7 @@ public interface ICatalogService
     Task<GameResponse?> AddGameAsync(CreateGameRequest request, int? userId);
     Task<ServiceResult> UpdateGameAsync(int id, UpdateGameRequest request);
     Task<ServiceResult> DeleteGameAsync(int id);
+    Task<ServiceResult> ApproveGameAsync(int id);
+    Task<ServiceResult> RejectGameAsync(int id);
+    Task<List<GameResponse>> GetByStatusAsync(GameStatus status);
 }
