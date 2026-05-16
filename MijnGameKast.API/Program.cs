@@ -97,14 +97,20 @@ public class Program
         builder.Services.AddScoped<IGamePlatformRepository, GamePlatformRepository>();
         builder.Services.AddScoped<IPublicCollectionService, PublicCollectionService>();
 
+        
+        var allowedOrigins = builder.Configuration
+            .GetSection("AllowedOrigins")
+            .Get<string[]>() ?? [];
+
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("FrontenDev", policy =>
+            options.AddPolicy("Frontend", policy =>
             {
                 policy
-                    .WithOrigins("http://localhost:5173")
+                    .WithOrigins(allowedOrigins)
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
         
@@ -118,7 +124,7 @@ public class Program
 
         
         app.UseHttpsRedirection();
-        app.UseCors("FrontenDev");
+        app.UseCors("Frontend");
         app.UseAuthorization();
 
         app.UseMiddleware<TokenMiddleware>();
