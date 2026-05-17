@@ -2,6 +2,8 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MijnGameKast.API.Data.Models;
 using Microsoft.AspNetCore.Mvc;
+using MijnGameKast.API.Attributes;
+using MijnGameKast.API.Services.Interfaces;
 
 namespace MijnGameKast.API.Controllers;
 
@@ -9,6 +11,31 @@ namespace MijnGameKast.API.Controllers;
 [Route("api/[controller]")]
 public class UserController : CustomBaseController
 {
+    private readonly IUserService _userService;
+
+    public UserController(IUserService userService)
+    {
+        _userService = userService;
+    }
+    
+    [RequireAuth(ModeratorOnly = true)]
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        return Ok(await _userService.GetAllAsync());
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUsernaneById(int id)
+    {
+        var result = await _userService.GetUsernameByIdAsync(id);
+        if (result == null)
+        {
+            return NoContent();
+        }
+        return Ok(result);
+    }
+    
     // private static List<User> _users = new List<User>()
     // {
     //     new User() { Id = 1, Name = "Jeroen" },

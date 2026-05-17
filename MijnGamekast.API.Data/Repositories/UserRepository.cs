@@ -12,6 +12,16 @@ public class UserRepository : IUserRepository
     {
         _dbContext = dbContext;
     }
+
+    public async Task<List<User>> GetAllAsync()
+    {
+        return await _dbContext.Users.OrderBy(u => u.Id).ToListAsync();
+    }
+
+    public async Task<string?> GetUsernameByIdAsync(int id)
+    {
+        return await _dbContext.Users.Where(u => u.Id == id).Select(u => u.Username).FirstOrDefaultAsync();
+    }
     
     public async Task<User?> GetByIdAsync(int? id)
     {

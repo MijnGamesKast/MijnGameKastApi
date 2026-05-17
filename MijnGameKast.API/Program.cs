@@ -96,6 +96,7 @@ public class Program
         builder.Services.AddScoped<IGameGenreRepository, GameGenreRepository>();
         builder.Services.AddScoped<IGamePlatformRepository, GamePlatformRepository>();
         builder.Services.AddScoped<IPublicCollectionService, PublicCollectionService>();
+        builder.Services.AddScoped<IUserService, UserService>();
 
         
         var allowedOrigins = builder.Configuration
