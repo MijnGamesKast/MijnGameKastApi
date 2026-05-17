@@ -12,6 +12,6 @@ public class Collection
     [Required(ErrorMessage = "Vul een beshchrijving in voor de collectie.")]
     public string Description { get; set; } = string.Empty;
     public int UserId { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsPublic { get; set; }
 }
