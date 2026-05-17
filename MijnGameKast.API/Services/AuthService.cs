@@ -20,23 +20,14 @@ public class AuthService : IAuthService
     {
         // Check if Email is already in use
         var existingUserByEmail = await _userRepository.GetByEmailAsync(request.Email);
-        if (existingUserByEmail != null)
-        {
-            return new AuthResult
-            {
-                Success = false,
-                Message = $"Er bestaat al een gamer met dit e-mailadres! ({existingUserByEmail.Email})"
-            };
-        }
-        
         // Check if Username is already in use
         var existingUserByUsername = await _userRepository.GetByUsernameAsync(request.Username);
-        if (existingUserByUsername != null)
+        if (existingUserByUsername != null || existingUserByEmail != null)
         {
             return new AuthResult
             {
                 Success = false,
-                Message = $"Er bestaat al een gamer met de username ({existingUserByUsername.Username})"
+                Message = $"Een ingevuld veld is niet beschikbaar!"
             };
         }
         
