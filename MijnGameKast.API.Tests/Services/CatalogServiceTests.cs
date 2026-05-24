@@ -2,6 +2,7 @@ using FluentAssertions;
 using Moq;
 using MijnGameKast.API.Data.Interfaces;
 using MijnGameKast.API.Data.Models;
+using MijnGameKast.API.Data.Models.Catalog;
 using MijnGameKast.API.Services;
 using MijnGameKast.API.Services.Results;
 
@@ -129,6 +130,100 @@ public class CatalogServiceTests
 
         _catalogRepositoryMock.Verify(
             repo => repo.DeleteGameAsync(It.IsAny<int>()),
+            Times.Never
+        );
+    }
+    
+    // Use case: UC16 - Catalogusgame wijzigen
+    // Testcase: UTC-UC16-01
+    // Doel: Controleren of een moderator een bestaande catalogusgame kan wijzigen.
+    [Fact]
+    public async Task UTC_UC16_01_UpdateGameAsync_ShouldUpdateGame_WhenGameExists()
+    {
+        // Arrange
+        const int gameId = 1;
+
+        var existingGame = new Game
+        {
+            Id = gameId,
+            Title = "Elden ring",
+            Description = "Open world RPG"
+        };
+
+        var request = new UpdateGameRequest()
+        {
+            Title = "Nieuwe titel",
+            Description = "Nieuwe Beschrijving"
+        };
+        
+        _catalogRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(gameId))
+            .ReturnsAsync(existingGame);
+        
+        _catalogRepositoryMock
+            .Setup(repo => repo.UpdateGameAsync(It.IsAny<Game>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        
+        // Act
+        var result = await service.UpdateGameAsync(gameId, request);
+        
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Type.Should().Be(ServiceResultType.Success);
+        
+        existingGame.Title.Should().Be(request.Title);
+        existingGame.Description.Should().Be(request.Description);
+
+        _catalogRepositoryMock.Verify(
+            repo => repo.GetByIdAsync(gameId),
+            Times.Once
+        );
+        
+        _catalogRepositoryMock.Verify(
+            repo => repo.UpdateGameAsync(It.Is<Game>(game =>
+                game.Id == gameId &&
+                game.Title == request.Title &&
+                game.Description == request.Description
+                )), Times.Once);
+    }
+    
+    // Use case: UC16 - Catalogusgame wijzigen
+    // Testcase: UTC-UC16-04
+    // Doel: Controleren of wijzigen van een niet-bestaande catalogusgame een foutresultaat geeft.
+    [Fact]
+    public async Task UTC_UC16_04_UpdateGameAsync_ShouldReturnNotFound_WhenGameDoesNotExist()
+    {
+        // Arrange
+        const int gameId = 999;
+
+        var request = new UpdateGameRequest
+        {
+            Title = "Nieuwe titel",
+            Description = "Nieuwe beschrijving"
+        };
+
+        _catalogRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(gameId))
+            .ReturnsAsync((Game?)null);
+
+        var service = CreateService();
+
+        // Act
+        var result = await service.UpdateGameAsync(gameId, request);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Type.Should().Be(ServiceResultType.NotFound);
+
+        _catalogRepositoryMock.Verify(
+            repo => repo.GetByIdAsync(gameId),
+            Times.Once
+        );
+
+        _catalogRepositoryMock.Verify(
+            repo => repo.UpdateGameAsync(It.IsAny<Game>()),
             Times.Never
         );
     }
