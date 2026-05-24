@@ -194,8 +194,12 @@ public class CollectionServiceTests
 
         _collectionRepositoryMock.Verify(
             repo => repo.GetByIdAsync(It.IsAny<int>()),
-            Times.Never
+            Times.Once
         );
+
+        _collectionRepositoryMock.Verify(
+            repo => repo.DeleteAsync(It.IsAny<int>()),
+            Times.Never);
     }
     
     // Use case: UC12 - Persoonlijke collectie verwijderen
