@@ -18,8 +18,11 @@ public class CollectionServiceTests
         );
     }
     
+    // Use case: UC03 - Persoonlijke collectie bekijken
+    // Testcase: UTC-UC03-01
+    // Doel: Controleren of alleen collecties van de ingelogde gebruiker worden teruggegeven.
     [Fact]
-    public async Task GetMyCollectionsAsync_ShouldReturnOnlyCollectionsFromLoggedInUser_WhenUserIdIsGiven()
+    public async Task UTC_UC03_01_GetMyCollectionsAsync_ShouldReturnOnlyCollectionsFromLoggedInUser_WhenUserIdIsGiven()
     {
         // Arrange
         int userId = 1; // Gamer A
@@ -73,9 +76,12 @@ public class CollectionServiceTests
             repo => repo.GetByUserIdAsync(userId),
             Times.Once);
     }
-    
+
+    // Use case: UC03 - Persoonlijke collectie bekijken
+    // Testcase: UTC-UC03-02
+    // Doel: Controleren of een gebruiker geen privécollectie van een andere gamer kan ophalen
     [Fact]
-    public async Task GetByIdAsync_ShouldReturnNull_WhenCollectionBelongsToAnotherUser()
+    public async Task UTC_UC03_02_GetByIdAsync_ShouldReturnNull_WhenCollectionBelongsToAnotherUser()
     {
         // Arrange
         var loggedInUserId = 1; // Gamer A
