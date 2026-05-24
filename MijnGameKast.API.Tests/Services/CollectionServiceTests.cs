@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Connections;
 using Moq;
 using MijnGameKast.API.Data.Interfaces;
 using MijnGameKast.API.Data.Models;
