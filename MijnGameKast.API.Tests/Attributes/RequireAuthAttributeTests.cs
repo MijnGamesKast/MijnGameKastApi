@@ -659,4 +659,194 @@ public class RequireAuthAttributeTests
             Times.Once
         );
     }
+    
+    // Non-functional requirement: NFR07 - Geen toegang tot gegevens zonder rechten
+// Testcase: UTC-NFR07-04
+// Doel: Controleren of een normale gamer geen actie kan uitvoeren waarvoor moderatorrechten nodig zijn.
+    [Fact]
+    public async Task UTC_NFR07_04_RequireAuthAttribute_ShouldReturnForbidden_WhenGamerUsesModeratorOnlyAction()
+    {
+        // Arrange
+        const string token = "valid-gamer-token";
+
+        var session = new Session
+        {
+            Id = 1,
+            Token = token,
+            UserId = 1,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(1)
+        };
+
+        var gamer = new User
+        {
+            Id = 1,
+            Username = "gamer",
+            Email = "gamer@mijngamekast.nl",
+            Role = UserRole.Gamer
+        };
+
+        var sessionRepositoryMock = new Mock<ISessionRepository>();
+        sessionRepositoryMock
+            .Setup(repo => repo.GetByTokenAsync(token))
+            .ReturnsAsync(session);
+
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(session.UserId))
+            .ReturnsAsync(gamer);
+
+        var serviceProvider = CreateServiceProvider(
+            sessionRepositoryMock,
+            userRepositoryMock
+        );
+
+        var executingContext = CreateActionExecutingContext(
+            serviceProvider,
+            token
+        );
+
+        var actionWasExecuted = false;
+
+        var next = CreateNextDelegate(
+            executingContext,
+            value => actionWasExecuted = value
+        );
+
+        var attribute = new RequireAuthAttribute
+        {
+            ModeratorOnly = true
+        };
+
+        // Act
+        await attribute.OnActionExecutionAsync(executingContext, next);
+
+        // Assert
+        actionWasExecuted.Should().BeFalse();
+
+        executingContext.Result.Should().BeOfType<UnauthorizedObjectResult>();
+
+        var result = (UnauthorizedObjectResult)executingContext.Result!;
+        result.StatusCode.Should().Be(403);
+    }
+    
+    // Non-functional requirement: NFR07 - Geen toegang tot gegevens zonder rechten
+// Testcase: UTC-NFR07-05
+// Doel: Controleren of een moderator een moderatoractie mag uitvoeren.
+    [Fact]
+    public async Task UTC_NFR07_05_RequireAuthAttribute_ShouldAllowAction_WhenUserIsModerator()
+    {
+        // Arrange
+        const string token = "valid-moderator-token";
+
+        var session = new Session
+        {
+            Id = 1,
+            Token = token,
+            UserId = 1,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(1)
+        };
+
+        var moderator = new User
+        {
+            Id = 1,
+            Username = "moderator",
+            Email = "moderator@mijngamekast.nl",
+            Role = UserRole.Moderator
+        };
+
+        var sessionRepositoryMock = new Mock<ISessionRepository>();
+        sessionRepositoryMock
+            .Setup(repo => repo.GetByTokenAsync(token))
+            .ReturnsAsync(session);
+
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(session.UserId))
+            .ReturnsAsync(moderator);
+
+        var serviceProvider = CreateServiceProvider(
+            sessionRepositoryMock,
+            userRepositoryMock
+        );
+
+        var executingContext = CreateActionExecutingContext(
+            serviceProvider,
+            token
+        );
+
+        var actionWasExecuted = false;
+
+        var next = CreateNextDelegate(
+            executingContext,
+            value => actionWasExecuted = value
+        );
+
+        var attribute = new RequireAuthAttribute
+        {
+            ModeratorOnly = true
+        };
+
+        // Act
+        await attribute.OnActionExecutionAsync(executingContext, next);
+
+        // Assert
+        actionWasExecuted.Should().BeTrue();
+
+        executingContext.Result.Should().BeNull();
+
+        executingContext.HttpContext.Items["UserId"].Should().Be(session.UserId);
+        executingContext.HttpContext.Items["User"].Should().Be(moderator);
+        executingContext.HttpContext.Items["Session"].Should().Be(session);
+    }
+    
+    // Non-functional requirement: NFR07 - Geen toegang tot gegevens zonder rechten
+// Testcase: UTC-NFR07-06
+// Doel: Controleren of een niet-ingelogde gebruiker geen beveiligde actie mag uitvoeren.
+    [Fact]
+    public async Task UTC_NFR07_06_RequireAuthAttribute_ShouldReturnUnauthorized_WhenUserIsNotLoggedIn()
+    {
+        // Arrange
+        var sessionRepositoryMock = new Mock<ISessionRepository>();
+        var userRepositoryMock = new Mock<IUserRepository>();
+
+        var serviceProvider = CreateServiceProvider(
+            sessionRepositoryMock,
+            userRepositoryMock
+        );
+
+        // Geen token meegeven.
+        var executingContext = CreateActionExecutingContext(serviceProvider);
+
+        var actionWasExecuted = false;
+
+        var next = CreateNextDelegate(
+            executingContext,
+            value => actionWasExecuted = value
+        );
+
+        var attribute = new RequireAuthAttribute();
+
+        // Act
+        await attribute.OnActionExecutionAsync(executingContext, next);
+
+        // Assert
+        actionWasExecuted.Should().BeFalse();
+
+        executingContext.Result.Should().BeOfType<UnauthorizedObjectResult>();
+
+        var result = (UnauthorizedObjectResult)executingContext.Result!;
+        result.StatusCode.Should().Be(401);
+
+        sessionRepositoryMock.Verify(
+            repo => repo.GetByTokenAsync(It.IsAny<string>()),
+            Times.Never
+        );
+
+        userRepositoryMock.Verify(
+            repo => repo.GetByIdAsync(It.IsAny<int?>()),
+            Times.Never
+        );
+    }
 }

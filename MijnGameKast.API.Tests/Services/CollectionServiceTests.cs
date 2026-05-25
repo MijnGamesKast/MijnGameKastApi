@@ -275,4 +275,139 @@ public class CollectionServiceTests
             Times.Never
         );
     }
+    
+    // Non-functional requirement: NFR07 - Geen toegang tot gegevens zonder rechten
+    // Testcase: UTC-NFR07-01
+    // Doel: Controleren of een gamer geen privécollectie kan ophalen waarvan die geen eigenaar is.
+    [Fact]
+    public async Task UTC_NFR07_01_GetByIdAsync_ShouldReturnNull_WhenCollectionBelongsToAnotherUser()
+    {
+        // Arrange
+        const int collectionId = 1;
+        const int gamerAUserId = 1;
+        const int gamerBUserId = 2;
+
+        var privateCollectionFromGamerA = new Collection
+        {
+            Id = collectionId,
+            Name = "Privécollectie van Gamer A",
+            Description = "Deze collectie is niet van Gamer B",
+            UserId = gamerAUserId,
+            IsPublic = false
+        };
+
+        _collectionRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(collectionId))
+            .ReturnsAsync(privateCollectionFromGamerA);
+
+        var service = CreateService();
+
+        // Act
+        var result = await service.GetByIdAsync(collectionId, gamerBUserId);
+
+        // Assert
+        result.Should().BeNull();
+
+        _collectionRepositoryMock.Verify(
+            repo => repo.GetByIdAsync(collectionId),
+            Times.Once
+        );
+    }
+    
+    // Non-functional requirement: NFR07 - Geen toegang tot gegevens zonder rechten
+    // Testcase: UTC-NFR07-02
+    // Doel: Controleren of een gamer geen persoonlijke collectie van een andere gamer kan wijzigen.
+    [Fact]
+    public async Task UTC_NFR07_02_UpdateAsync_ShouldReturnFalse_WhenCollectionBelongsToAnotherUser()
+    {
+        // Arrange
+        const int collectionId = 1;
+        const int gamerAUserId = 1;
+        const int gamerBUserId = 2;
+
+        var existingCollectionFromGamerA = new Collection
+        {
+            Id = collectionId,
+            Name = "Originele collectie",
+            Description = "Originele beschrijving",
+            UserId = gamerAUserId,
+            IsPublic = false
+        };
+
+        var changedCollection = new Collection
+        {
+            Name = "Gewijzigde collectie",
+            Description = "Gewijzigde beschrijving",
+            IsPublic = true
+        };
+
+        _collectionRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(collectionId))
+            .ReturnsAsync(existingCollectionFromGamerA);
+
+        var service = CreateService();
+
+        // Act
+        var result = await service.UpdateAsync(collectionId, changedCollection, gamerBUserId);
+
+        // Assert
+        result.Should().BeFalse();
+
+        existingCollectionFromGamerA.Name.Should().Be("Originele collectie");
+        existingCollectionFromGamerA.Description.Should().Be("Originele beschrijving");
+        existingCollectionFromGamerA.IsPublic.Should().BeFalse();
+
+        _collectionRepositoryMock.Verify(
+            repo => repo.GetByIdAsync(collectionId),
+            Times.Once
+        );
+
+        _collectionRepositoryMock.Verify(
+            repo => repo.UpdateAsync(It.IsAny<Collection>()),
+            Times.Never
+        );
+    }
+    
+    // Non-functional requirement: NFR07 - Geen toegang tot gegevens zonder rechten
+    // Testcase: UTC-NFR07-03
+    // Doel: Controleren of een gamer geen persoonlijke collectie van een andere gamer kan verwijderen.
+    [Fact]
+    public async Task UTC_NFR07_03_DeleteAsync_ShouldReturnFalse_WhenCollectionBelongsToAnotherUser()
+    {
+        // Arrange
+        const int collectionId = 1;
+        const int gamerAUserId = 1;
+        const int gamerBUserId = 2;
+
+        var collectionFromGamerA = new Collection
+        {
+            Id = collectionId,
+            Name = "Collectie van Gamer A",
+            Description = "Niet van Gamer B",
+            UserId = gamerAUserId,
+            IsPublic = false
+        };
+
+        _collectionRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(collectionId))
+            .ReturnsAsync(collectionFromGamerA);
+
+        var service = CreateService();
+
+        // Act
+        var result = await service.DeleteAsync(collectionId, gamerBUserId);
+
+        // Assert
+        result.Should().BeFalse();
+
+        _collectionRepositoryMock.Verify(
+            repo => repo.GetByIdAsync(collectionId),
+            Times.Once
+        );
+
+        _collectionRepositoryMock.Verify(
+            repo => repo.DeleteAsync(It.IsAny<int>()),
+            Times.Never
+        );
+    }
 }
