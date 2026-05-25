@@ -31,6 +31,20 @@ public class PlatformRepository : IPlatformRepository
         return platform;
     }
 
+    public async Task<bool> UpdatePlatformAsync(Platform platform)
+    {
+        var existingPlatform = await _dbContext.Platforms.FindAsync(platform.Id);
+        if (existingPlatform == null)
+        {
+            return false;
+        }
+        
+        existingPlatform.PlatformName = platform.PlatformName;
+        
+        await _dbContext.SaveChangesAsync();
+        return true;       
+    }
+
     public async Task<bool> DeletePlatformAsync(int id)
     {
         var platform = await _dbContext.Platforms.FindAsync(id);

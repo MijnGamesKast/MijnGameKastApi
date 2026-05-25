@@ -29,6 +29,30 @@ public class PlatformService : IPlatformService
         return await _platformRepository.AddPlatformAsync(platform);
     }
 
+    public async Task<ServiceResult> UpdatePlatformAsync(int id, Platform platform)
+    {
+        var existingPlatform = await _platformRepository.GetByIdAsync(id);
+        if (existingPlatform == null)
+        {
+            return new ServiceResult
+            {
+                Message = $"Platform met id ({id}) is niet gevonden!",
+                Type = ServiceResultType.NotFound
+            };
+        }
+
+        existingPlatform.Id = id;
+        existingPlatform.PlatformName = platform.PlatformName;
+        
+        var result = await _platformRepository.UpdatePlatformAsync(existingPlatform);
+        
+        return result switch
+        {
+            true => new ServiceResult { Success = true, Message = $"Platform ({id}) is successvol bijgewerkt", Type = ServiceResultType.Success },
+            false => new ServiceResult { Message = $"Platform kan niet gevonden geworden", Type = ServiceResultType.NotFound }
+        };
+    }
+
     public async Task<ServiceResult> DeletePlatformAsync(int id)
     {
         var result = await _platformRepository.DeletePlatformAsync(id);

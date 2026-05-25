@@ -8,5 +8,6 @@ public interface IPlatformService
     Task<List<Platform>> GetAllAsync();
     Task<Platform?> GetByIdAsync(int id);
     Task<Platform> AddPlatform(Platform platform);
+    Task<ServiceResult> UpdatePlatformAsync(int id, Platform platform);
     Task<ServiceResult> DeletePlatformAsync(int id);
 }
