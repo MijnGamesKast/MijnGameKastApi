@@ -53,6 +53,23 @@ public class GenreController : CustomBaseController
     }
 
     [RequireAuth(ModeratorOnly = true)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateGenre(int id, [FromBody] Genre genre)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new
+            {
+                Message = "De genregegevens zijn ongeldig",
+                Error = GetValidationErrors()
+            });
+        }
+
+        var result = await _genreService.UpdateGenreAsync(id, genre);
+        return ToActionResult(result);
+    }
+
+    [RequireAuth(ModeratorOnly = true)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGenre(int id)
     {

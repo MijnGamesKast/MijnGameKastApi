@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using MijnGameKast.API.Attributes;
 using MijnGameKast.API.Data.Models;
@@ -50,6 +51,23 @@ public class PlatformController : CustomBaseController
 
         var createdPlatform = await _platformService.AddPlatform(platform);
         return CreatedAtAction(nameof(GetbyId), new { id = createdPlatform.Id }, createdPlatform);
+    }
+
+    [RequireAuth(ModeratorOnly = true)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdatePlatform(int id, [FromBody] Platform platform)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new
+            {
+                Message = "De platformgegevens zijn ongeldig",
+                Error = GetValidationErrors()
+            });
+        }
+
+        var result = await _platformService.UpdatePlatformAsync(id, platform);
+        return ToActionResult(result);
     }
 
     [RequireAuth(ModeratorOnly = true)]
