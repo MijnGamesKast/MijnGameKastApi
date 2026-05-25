@@ -31,6 +31,21 @@ public class GenreRepository : IGenreRepository
         return genre;
     }
 
+    public async Task<bool> UpdateGenreAsync(Genre genre)
+    {
+        var existingGenre = await _dbContext.Genres.FindAsync(genre.Id);
+
+        if (existingGenre == null)
+        {
+            return false;
+        }
+        
+        existingGenre.GenreName = genre.GenreName;
+        
+        await _dbContext.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<bool> DeleteGenreAsync(int id)
     {
         var genre = await _dbContext.Genres.FindAsync(id);
