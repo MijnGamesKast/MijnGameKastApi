@@ -161,7 +161,7 @@ public class CollectionServiceTests
     }
     
     // Use case: UC12 - Persoonlijke collectie verwijderen
-    // Testcase: UTC-UC-02
+    // Testcase: UTC-UC12-02
     // Doel: Controleren of een gebruiker geen collectie kan verwijderen waarvan die geen eigenaar is.
     [Fact]
     public async Task UTC_UC12_02_DeleteAsync_ShouldReturnFalse_WhenCollectionBelongsToAnotherUser()
