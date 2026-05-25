@@ -42,6 +42,14 @@ public class AuthController : CustomBaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        if (request == null)
+        {
+            return BadRequest(new
+            {
+                Message = "Er is geen geldige loginrequest meegestuurd"
+            });
+        }
+        
         if (!ModelState.IsValid)
         {
             return BadRequest(new
